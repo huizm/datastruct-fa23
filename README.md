@@ -11,7 +11,7 @@ The better practice is to **design your data structure and algorithms on the pap
 1. Deletion in contiguous list
 2. Insertion in contiguous list
 3. Joseph's problem (linked list)
-4. Classity commodities (linked list)
+4. Classify commodities (linked list)
 
 *hw1-1*, *hw1-2* use contiguous list and *hw1-3*, *hw1-4* use linked list. The generic implementation of linked list is in `LinkedList.c`, `LinkedList.h`.
 
