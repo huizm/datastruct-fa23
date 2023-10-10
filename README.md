@@ -13,4 +13,6 @@ The better practice is to **design your data structure and algorithms on the pap
 3. Joseph's problem (linked list)
 4. Classity commodities (linked list)
 
-*hw1-1*, *hw1-2* use contiguous list and *hw1-3*, *hw1-4* use linked list. The implementation of linked list is in `LinkedList.c`, `LinkedList.h`, however, it is also implemented in those two files that used it.
+*hw1-1*, *hw1-2* use contiguous list and *hw1-3*, *hw1-4* use linked list. The generic implementation of linked list is in `LinkedList.c`, `LinkedList.h`.
+
+However, due to the restrictions of the procedure-oriented nature of C, implementing a generic linked list that suits all kinds of data is next to impossible. Therefore, there are linked lists implemented inside those two solutions, respectively. And the "generic" version is just for learning purpose.
