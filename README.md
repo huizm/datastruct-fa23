@@ -1,6 +1,6 @@
 # datastruct-fa23
 
-The better practice is to **design your data structure and algorithms on the paper before you start to write code**, otherwise your code will be messier and messier when you write it and it will also be less portable if you implement the "ds & a" specifically to one problem.
+The better practice is to **design your data structure and algorithms on the paper before you start to write code**, otherwise your code will be messier and messier when you write it and it will also be less portable.
 
 ---
 
@@ -23,6 +23,8 @@ However, due to the restrictions of the procedure-oriented nature of C, implemen
 2. Pascal's triangle (queue)
 3. Train coach rearrangement (queue)
 4. Knuth-Morris-Pratt algorithm for pattern searching
+
+Again, it is hard and absurd to attempt to implement a generic data structure in a language like C. So they are implemented specifically to the programs that use them.
 
 ## (selected) proj
 

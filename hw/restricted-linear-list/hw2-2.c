@@ -15,7 +15,7 @@
 #define SIZE 102
 
 typedef struct node {
-    unsigned long long data;
+    unsigned long long data; // turns out that even `unsigned long long` is not large enough
     struct node *next;
 } Node;
 
