@@ -26,6 +26,8 @@ However, due to the restrictions of the procedure-oriented nature of C, implemen
 
 Again, it is hard and absurd to attempt to implement a generic data structure in a language like C. So they are implemented specifically to the programs that use them.
 
+*hw2-1* and *hw2-2* use linked stack and queue, respectively, while *hw2-3* uses 3 contiguous queues.
+
 ## (selected) proj
 
 The course offered 13 projects out of which it requires each student to choose 5 (at least 2 with an asterisk).
