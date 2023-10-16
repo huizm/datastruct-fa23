@@ -1,0 +1,7 @@
+# IDE configurations
+.idea/
+.vscode/
+
+# binary
+*.class
+*.out
