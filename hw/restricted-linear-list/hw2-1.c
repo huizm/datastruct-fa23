@@ -12,30 +12,33 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+typedef struct node {
+    char data;
+    struct node *next; // node beneath this node
+} Node;
+
 typedef struct stack {
-    unsigned top;
-    unsigned size;
-    char *bottom;
+    Node *top;
+    int size;
 } Stack;
 
-Stack *InitStack(unsigned size);
+Stack *InitStack(void);
+void DestroyStack(Stack *s);
 void Push(Stack *s, char data);
-char Pop(Stack *s); // if empty return '\0'
-char Peek(Stack *s); // if empty return '\0'
+char Pop(Stack *s);
+char Peek(Stack *s);
 bool IsEmpty(Stack *s);
-bool IsFull(Stack *s);
-
 
 int main(void) {
-    Stack *s = InitStack(6U);
-    char buf;
-    bool success_flag = true;
+    Stack *s = InitStack();
+    bool success = true;
 
-    while ((buf = (char)getchar()) != '\n') {
+    char buf;
+    while ((buf = getchar()) != '\n' && buf != EOF) {
         switch (buf) {
-            case '(':
-            case '[':
             case '{':
+            case '[':
+            case '(':
                 Push(s, buf);
                 break;
             case ')':
@@ -43,7 +46,7 @@ int main(void) {
                     Pop(s);
                 else {
                     printf("缺少(括号");
-                    success_flag = false;
+                    success = false;
                 }
                 break;
             case ']':
@@ -51,7 +54,7 @@ int main(void) {
                     Pop(s);
                 else {
                     printf("缺少[括号");
-                    success_flag = false;
+                    success = false;
                 }
                 break;
             case '}':
@@ -59,7 +62,7 @@ int main(void) {
                     Pop(s);
                 else {
                     printf("缺少{括号");
-                    success_flag = false;
+                    success = false;
                 }
                 break;
             default:
@@ -67,84 +70,74 @@ int main(void) {
         }
     }
 
-    while (!IsEmpty(s)) {
-        buf = Pop(s);
-        switch (buf) {
-            case '(':
-                printf("缺少)括号");
-                success_flag = false;
-                break;
-            case '[':
-                printf("缺少]括号");
-                success_flag = false;
-                break;
-            case '{':
-                printf("缺少}括号");
-                success_flag = false;
-                break;
-            default:
-                break;
-        }
+    if (IsEmpty(s) && success) {
+        printf("匹配成功");
+        return 0;
     }
 
-    if (success_flag)
-        printf("匹配成功");
-
+    while (!IsEmpty(s)) {
+        buf = Pop(s);
+        switch (buf)
+        {
+        case '(':
+            printf("缺少)括号");
+            break;
+        case '[':
+            printf("缺少]括号");
+            break;
+        case '{':
+            printf("缺少}括号");
+            break;
+        default:
+            break;
+        }
+    }
     return 0;
 }
 
-Stack *InitStack(unsigned size) {
-    char *arr = (char *)malloc(size * sizeof(char));
-    if (arr == NULL) {
-        perror("failed to allocate memory");
-        exit(-1);
-    }
+Stack *InitStack(void) {
     Stack *s = (Stack *)malloc(sizeof(Stack));
-    if (s == NULL) {
-        perror("failed to allocate memory");
-        exit(-1);
-    }
-
-    s->top = 0U;
-    s->size = size;
-    s->bottom = arr;
+    s->size = 0;
+    s->top = NULL;
     return s;
 }
 
-void Push(Stack *s, char data) {
-    if (IsFull(s))
-        perror("index out of range");
+void DestroyStack(Stack *s) {
+    while (!IsEmpty(s))
+        Pop(s);
+    free(s);
+    return;
+}
 
-    *(s->bottom + s->top) = data;
-    s->top++;
+void Push(Stack *s, char data) {
+    Node *n = (Node *)malloc(sizeof(Node));
+    n->data = data;
+    n->next = s->top;
+    s->top = n;
+    s->size++;
+    return;
 }
 
 char Pop(Stack *s) {
     if (IsEmpty(s))
         return '\0';
-
-    char data = *(s->bottom + s->top - 1);
-    s->top--;
+    
+    Node *temp = s->top;
+    char data = s->top->data;
+    s->top = s->top->next;
+    free(temp);
+    s->size--;
     return data;
 }
 
 char Peek(Stack *s) {
     if (IsEmpty(s))
         return '\0';
-
-    char data = *(s->bottom + s->top - 1);
-    return data;
+    return s->top->data;
 }
 
 bool IsEmpty(Stack *s) {
-    if (s->top == 0)
-        return true;
-    else
-        return false;
-}
-
-bool IsFull(Stack *s) {
-    if (s->top == s->size - 1)
+    if (s->size == 0)
         return true;
     else
         return false;

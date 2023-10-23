@@ -1,3 +1,8 @@
+# no-extension binary
+*
+!*.*
+!*/
+
 # IDE configurations
 .idea/
 .vscode/
@@ -5,3 +10,6 @@
 # binary
 *.class
 *.out
+
+#system
+.DS_Store
