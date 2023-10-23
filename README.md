@@ -24,9 +24,12 @@ However, due to the restrictions of the procedure-oriented nature of C, implemen
 3. Train coach rearrangement (queue)
 4. Knuth-Morris-Pratt algorithm for pattern searching
 
-Again, it is hard and absurd to attempt to implement a generic data structure in a language like C. So they are implemented specifically to the programs that use them.
+## hw 3 Tree and binary tree
 
-*hw2-1* and *hw2-2* use linked stack and queue, respectively, while *hw2-3* uses 3 contiguous queues.
+1. Traverse thru binary tree
+2. Huffman coding
+3. Balanced binary search tree
+4. Max heap
 
 ## (selected) proj
 
