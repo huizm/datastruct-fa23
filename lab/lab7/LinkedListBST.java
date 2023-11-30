@@ -7,12 +7,12 @@ public class LinkedListBST<Key extends Comparable<Key>, Value> implements BST<Ke
     
     private Node root;
 
-    private class Node {
+    protected class Node {
 
-        private Key key;
-        private Value val;
-        private Node left, right; // links to subtrees
-        private int n; // node count in subtree rooted here
+        protected Key key;
+        protected Value val;
+        protected Node left, right; // links to subtrees
+        protected int n; // node count in subtree rooted here
 
         public Node(Key key, Value val, int n) {
             this.key = key;
@@ -71,8 +71,8 @@ public class LinkedListBST<Key extends Comparable<Key>, Value> implements BST<Ke
         if (cmp < 0)      return delete(x.left, key);
         else if (cmp > 0) return delete(x.right, key);
         else {
-            if (x.right == null)     return x.right;
-            else if (x.left == null) return x.left;
+            if (x.right == null)     return x.left;
+            else if (x.left == null) return x.right;
             
             // replace `x` with its successor
             Node t = x;
