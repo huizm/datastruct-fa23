@@ -23,8 +23,12 @@ public class Knapsack {
     }
 
     public List<List<Integer>> solve() {
-        List<Integer> result = new ArrayList<Integer>();
-        solve(result, weights, T, 0);
+        if (values == null) {
+            List<Integer> result = new ArrayList<Integer>();
+            solve(result, weights, T, 0);
+        } else {
+            findMaxValue();
+        }
         return results;
     }
 
@@ -45,14 +49,41 @@ public class Knapsack {
         }
     }
 
-    // public long[][] solve(long[] volume, long[] value) {
-    //     return null;
-    // }
+    public List<List<Integer>> findMaxValue() {
+        int n = weights.length;
+        int[][] dp = new int[n + 1][T + 1]; // max value for selected items from first `i` with weight no more than `j`
+        boolean[][] path = new boolean[n + 1][T + 1]; // whether current item chosen at state `i`
+
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= T; j++) {
+                if (weights[i - 1] <= j && dp[i - 1][j] < dp[i - 1][j - weights[i - 1]] + values[i - 1]) {
+                    dp[i][j] = dp[i - 1][j - weights[i - 1]] + values[i - 1];
+                    path[i][j] = true;  // item `i` added 
+                } else {
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+
+        int maxWeight = T;
+        List<Integer> result = new ArrayList<Integer>();
+
+        for (int i = n; i > 0; i--) {
+            if (path[i][maxWeight]) {
+                result.add(weights[i-1]);
+                maxWeight -= weights[i-1];
+            }
+        }
+        results.add(result);
+        return results;
+    }
 
     public static void main(String[] args) {
         int[] weights = { 1, 8, 4, 3, 5, 2 };
+        int[] values = { 2, 5, 3, 4, 8, 1 };
         int T = 10;
-        Knapsack knapsack = new Knapsack(T, weights);
+        // Knapsack knapsack = new Knapsack(T, weights);
+        Knapsack knapsack = new Knapsack(T, weights, values);
         System.out.println(knapsack.solve());
     }
 }
