@@ -1,5 +1,3 @@
-package lab.lab7;
-
 public interface ST<Key extends Comparable<Key>, Value> {
     
     void put(Key key, Value val);
