@@ -1,45 +1,177 @@
-import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Queue;
 
-public class LinkedListBST<Key extends Comparable<Key>, Value> implements BST<Key, Value> {
+public class RedBlackBST<Key extends Comparable<Key>, Value> implements BST<Key, Value> {
     
+    private static final boolean RED = true;
+    private static final boolean BLACK = false;
     private Node root;
 
     private class Node {
 
+        private boolean color;
+        private Node left, right;
         private Key key;
         private Value val;
-        private Node left, right; // links to subtrees
         private int n; // node count in subtree rooted here
 
-        private Node(Key key, Value val, int n) {
+        private Node(Key key, Value val, int n, boolean color) {
             this.key = key;
             this.val = val;
             this.n = n;
+            this.color = color;
         }
     }
 
-    public LinkedListBST() {
+    public RedBlackBST() {
         root = null;
+    }
+
+    private boolean isRed(Node h) {
+        if (h == null) return false; // default black
+        return h.color;
+    }
+
+    /** rotate right leaning red link to left leaning */
+    private Node rotateLeft(Node h) {
+        Node x = h.right;
+        h.right = x.left;
+        x.left = h;
+
+        x.color = h.color;
+        h.color = RED;
+
+        x.n = h.n;
+        h.n = size(h.left) + size(h.right) + 1;
+        return x;
+    }
+
+    /** rotate left leaning red link to right leaning */
+    private Node rotateRight(Node h) {
+        Node x = h.left;
+        h.left = x.right;
+        x.right = h;
+
+        x.color = h.color;
+        h.color = RED;
+
+        x.n = h.n;
+        h.n = size(h.left) + size(h.right) + 1;
+        return x;
+    }
+
+    private void flipColors(Node h) {
+        h.color = !h.color;
+        h.left.color = !h.left.color;
+        h.right.color = !h.right.color;
     }
 
     @Override
     public void put(Key key, Value val) {
         root = put(root, key, val);
+        root.color = BLACK;
     }
 
-    private Node put(Node x, Key key, Value val) {
-        if (x == null) return new Node(key, val, 1);
+    private Node put(Node h, Key key, Value val) {
+        // create and insert new node at the bottom
+        if (h == null) return new Node(key, val, 1, RED);
 
         // way down the tree
-        int cmp = key.compareTo(x.key);
-        if (cmp < 0)      x.left = put(x.left, key, val);
-        else if (cmp > 0) x.right = put(x.right, key, val);
-        else              x.val = val;
+        int cmp = key.compareTo(h.key);
+        if (cmp < 0)      h.left = put(h.left, key, val);
+        else if (cmp > 0) h.right = put(h.right, key, val);
+        else              h.val = val;
 
-        // way up the tree, update `n`
-        x.n = size(x.left) + size(x.right) + 1;
-        return x;
+        // way up the tree, update `color` and `n` on the path
+        if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h);
+        if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);
+        if (isRed(h.left) && isRed(h.right)) flipColors(h);
+
+        h.n = size(h.left) + size(h.right) + 1;
+        return h;
+    }
+
+    @Override
+    public void delete(Key key) {
+        if (!isRed(root.left) && !isRed(root.right)) root.color = RED;
+        root = delete(root, key);
+        if (!isEmpty()) root.color = BLACK;
+    }
+
+    private Node delete(Node h, Key key) {
+        if (key.compareTo(h.key) < 0) {
+            if (!isRed(h.left) && !isRed(h.left.left)) h = moveRedLeft(h);
+            h.left = delete(h.left, key);
+        } else {
+            if (isRed(h.left)) h = rotateRight(h);
+            if (key.compareTo(h.key) == 0 && h.right == null) return null;
+            if (!isRed(h.right) && !isRed(h.right.left)) h = moveRedRight(h);
+            if (key.compareTo(h.key) == 0) {
+                h.val = get(h.right, min(h.right).key);
+                h.key = min(h.right).key;
+                h.right = deleteMin(h.right);
+            } else h.right = delete(h.right, key);
+        }
+        return balance(h);
+    }
+
+    @Override
+    public void deleteMin() {
+        if (!isRed(root.left) && !isRed(root.right)) root.color = RED;
+        root = deleteMin(root);
+        if (!isEmpty()) root.color = BLACK;
+    }
+
+    private Node deleteMin(Node h) {
+        if (h.left == null) return null;
+
+        if (!isRed(h.left) && !isRed(h.left.left)) h = moveRedLeft(h);
+        h.left = deleteMin(h.left);
+        return balance(h);
+    }
+
+    private Node moveRedLeft(Node h) {
+        flipColors(h);
+        if (isRed(h.right.left)) {
+            h.right = rotateRight(h.right);
+            h = rotateLeft(h);
+        }
+        return h;
+    }
+
+    private Node balance(Node h) {
+        if (isRed(h.right)) h = rotateLeft(h);
+
+        // way up the tree, update `color` and `n` on the path
+        if (isRed(h.right) && !isRed(h.left)) h = rotateLeft(h);
+        if (isRed(h.left) && isRed(h.left.left)) h = rotateRight(h);
+        if (isRed(h.left) && isRed(h.right)) flipColors(h);
+
+        h.n = size(h.left) + size(h.right) + 1;
+        return h;
+    }
+
+    @Override
+    public void deleteMax() {
+        if (!isRed(root.left) && !isRed(root.right)) root.color = RED;
+        root = deleteMax(root);
+        if (!isEmpty()) root.color = BLACK;
+    }
+
+    private Node deleteMax(Node h) {
+        if (isRed(h.left)) h = rotateRight(h);
+        if (h.right == null) return null;
+        if (!isRed(h.right) && !isRed(h.right.left)) h = moveRedRight(h);
+        h.right = deleteMax(h.right);
+        return balance(h);
+    }
+
+    private Node moveRedRight(Node h) {
+        flipColors(h);
+        if (isRed(h.left.left)) {
+            h = rotateRight(h);
+        }
+        return h;
     }
 
     @Override
@@ -55,33 +187,6 @@ public class LinkedListBST<Key extends Comparable<Key>, Value> implements BST<Ke
         if (cmp < 0)      return get(x.left, key);
         else if (cmp > 0) return get(x.right, key);
         else              return x.val;
-    }
-
-    @Override
-    public void delete(Key key) {
-        root = delete(root, key);
-    }
-
-    private Node delete(Node x, Key key) {
-        if (x == null) return null;
-
-        int cmp = key.compareTo(x.key);
-        if (cmp < 0)      x.left = delete(x.left, key);
-        else if (cmp > 0) x.right = delete(x.right, key);
-        else {
-            if (x.right == null)     return x.left;
-            else if (x.left == null) return x.right;
-            
-            // replace `x` with its successor
-            Node t = x;
-            x = min(t.right);
-            x.right = deleteMin(t.right); // remove successor from right subtree and point x to right subtree
-            x.left = t.left;
-        }
-
-        // way up the tree, update number of nodes in the subtree
-        x.n = size(x.left) + size(x.right) + 1;
-        return x;
     }
 
     @Override
@@ -194,34 +299,6 @@ public class LinkedListBST<Key extends Comparable<Key>, Value> implements BST<Ke
         if (k == r)     return x;
         else if (k < r) return select(x.left, k);
         else            return select(x.right, k - r - 1);
-    }
-
-    @Override
-    public void deleteMin() {
-        root = deleteMin(root);
-    }
-
-    private Node deleteMin(Node x) {
-        if (x.left == null) return x.right;
-
-        // way down the tree, find min node and delete
-        // way up the tree, update subtree root and number of nodes in the subtree on the path
-        x.left = deleteMin(x.left);
-        x.n = size(x.left) + size(x.right) + 1;
-        return x;
-    }
-
-    @Override
-    public void deleteMax() {
-        root = deleteMax(root);
-    }
-
-    private Node deleteMax(Node x) {
-        if (x.right == null) return x.left;
-
-        x.right = deleteMax(x.right);
-        x.n = size(x.left) + size(x.right) + 1;
-        return x;
     }
 
     @Override
