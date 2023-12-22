@@ -8,155 +8,167 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define SIZE 5
+typedef struct node {
+    int data;
+    struct node *next;
+} Node;
 
 typedef struct queue {
-    int rear;
-    int data[SIZE];
+    Node *front, *rear;
+    int size;
 } Queue;
 
 Queue *InitQueue(void);
-void Enqueue(Queue * restrict q, int data);
-int Dequeue(Queue * restrict q);
-int PeekFront(const Queue * restrict q);
-int PeekRear(const Queue * restrict q);
-bool IsEmpty(const Queue * restrict q);
-bool IsFull(const Queue * restrict q);
+void DestroyQueue(Queue *q);
+void Enqueue(Queue *q, int data);
+int Dequeue(Queue *q);
+int PeekFront(Queue *q);
+int PeekRear(Queue *q);
+bool IsEmpty(Queue *q);
+int SizeOf(Queue *q);
 
 int main(void) {
-    int largest = 0;
-    int buf;
-
-    // init queues
-    Queue *inbound = InitQueue();
-    Queue *outbound = InitQueue();
-    Queue *tracks[3];
-    for (int i = 0; i < 3; i++) {
-        tracks[i] = InitQueue();
+    Queue *pullIn = InitQueue();
+    Queue *pullOut = InitQueue();
+    Queue *buffer[3];
+    for (int i=0; i<3; i++) {
+        buffer[i] = InitQueue();
     }
 
-    // read data into `inbound` queue
-    while (scanf("%d", &buf)) {
-        Enqueue(inbound, buf);
+    int buf;
+    int largest = 0, carCount = 0;
+    char adjacent;
+    int success = 2;
+    do {
+        success = scanf("%d%c", &buf, &adjacent);
+        Enqueue(pullIn, buf);
+        carCount++;
         if (buf > largest)
             largest = buf;
+    } while (success > 1 && adjacent != '\n' && adjacent != EOF);
 
-        if (getchar() == '\n')
-            break;
-    }
-
-    // iterate through `inbound`
-    while (!IsEmpty(inbound)) {
-        buf = Dequeue(inbound);
-        bool success = false;
-
+    while (!IsEmpty(pullIn)) {
+        buf = Dequeue(pullIn);
         if (buf == largest) {
-            for (int i = 0; i < 3; i++) {
-                if (IsEmpty(tracks[i])) {
-                    Enqueue(outbound, buf);
-                    success = true;
-                    largest--;
-                }
+            if (IsEmpty(buffer[0]) || IsEmpty(buffer[1]) || IsEmpty(buffer[2])) {
+                Enqueue(pullOut, buf);
+                largest--;
+            } else {
+                printf("重排失败");
+                return 0;
             }
         } else {
-            // enqueue `buf` to a buffer track
-
-            for (int i = 0; i < 3; i++) {
-                // tracks[i] not empty and rear number greater than buf
-                if (!IsEmpty(tracks[i]) && PeekRear(tracks[i]) > buf) {
-                    Enqueue(tracks[i], buf);
-                    success = true;
-                    break;
-                }
-
-                // tracks[i] empty
-                if (IsEmpty(tracks[i])) {
-                    Enqueue(tracks[i], buf);
-                    success = true;
+            bool enqueued = false;
+            for (int i=0; i<3; i++) {
+                if (!IsEmpty(buffer[i]) && PeekRear(buffer[i]) > buf) {
+                    Enqueue(buffer[i], buf);
+                    enqueued = true;
                     break;
                 }
             }
-        }
 
-        if (!success) {
-            printf("重排失败");
-            return 0;
+            if (enqueued) continue;
+            for (int i=0; i<3; i++) {
+                if (IsEmpty(buffer[i])) {
+                    Enqueue(buffer[i], buf);
+                    enqueued = true;
+                    break;
+                }
+            }
+
+            if (enqueued) continue;
+            else {
+                printf("重排失败");
+                return 0;
+            }
         }
     }
 
-    // iterate through buffer tracks
-    while (!IsEmpty(tracks[0]) || !IsEmpty(tracks[1]) || !IsEmpty(tracks[2])) {
-        for (int i = 0; i < 3; i++) {
-            if (PeekFront(tracks[i]) == largest) {
-                Enqueue(outbound, Dequeue(tracks[i]));
+    while (SizeOf(pullOut) < carCount) {
+        for (int i=0; i<3; i++) {
+            if (!IsEmpty(buffer[i]) && PeekFront(buffer[i]) == largest) {
+                Enqueue(pullOut, Dequeue(buffer[i]));
                 largest--;
             }
         }
     }
 
-    // print outbound queue
-    if (!IsEmpty(outbound)) {
-        buf = Dequeue(outbound);
-        printf("%d", buf);
-    }
-    while (!IsEmpty(outbound)) {
-        buf = Dequeue(outbound);
-        printf(" %d", buf);
+    printf("%d", Dequeue(pullOut));
+    while (!IsEmpty(pullOut))
+        printf(" %d", Dequeue(pullOut));
+
+    DestroyQueue(pullIn);
+    DestroyQueue(pullOut);
+    for (int i=0; i<3; i++) {
+        DestroyQueue(buffer[i]);
     }
     return 0;
 }
 
 Queue *InitQueue(void) {
     Queue *q = (Queue *)malloc(sizeof(Queue));
-    q->rear = 0; // next of rear element
+    q->front = NULL;
+    q->rear = NULL;
+    q->size = 0;
     return q;
 }
 
-void Enqueue(Queue * restrict q, const int data) {
-    if (IsFull(q))
-        return;
-
-    q->data[q->rear] = data;
-    q->rear++;
+void DestroyQueue(Queue *q) {
+    while (!IsEmpty(q))
+        Dequeue(q);
+    free(q);
+    return;
 }
 
-int Dequeue(Queue * restrict q) {
-    if (IsEmpty(q))
-        return -1;
+void Enqueue(Queue *q, int data) {
+    Node *n = (Node *)malloc(sizeof(Node));
+    n->data = data;
+    n->next = NULL;
 
-    int data = q->data[0];
-    for (int i = 1; i < q->rear; i++)
-        q->data[i - 1] = q->data[i];
-    q->rear--;
+    if (IsEmpty(q)) {
+        q->front = n;
+        q->rear = n;
+    } else {
+        q->rear->next = n;
+        q->rear = n;
+    }
+
+    q->size++;
+    return;
+}
+
+int Dequeue(Queue *q) {
+    if (IsEmpty(q))
+        return 0;
+
+    int data = q->front->data;
+    Node *temp = q->front;
+    q->front = q->front->next;
+    free(temp);
+
+    q->size--;
+    if (q->size == 0) {
+        q->rear = NULL;
+    }
     return data;
 }
 
-int PeekFront(const Queue * restrict q) {
+int PeekFront(Queue *q) {
     if (IsEmpty(q))
-        return -1;
-
-    int data = q->data[0];
-    return data;
+        return 0;
+    return q->front->data;
 }
 
-int PeekRear(const Queue * restrict q) {
+int PeekRear(Queue *q) {
     if (IsEmpty(q))
-        return -1;
-
-    int data = q->data[q->rear - 1];
-    return data;
+        return 0;
+    return q->rear->data;
 }
 
-bool IsEmpty(const Queue * restrict q) {
-    if (q->rear == 0)
-        return true;
-    else
-        return false;
+bool IsEmpty(Queue *q) {
+    return q->size == 0 ? true : false;
 }
 
-bool IsFull(const Queue * restrict q) {
-    if (q->rear >= SIZE)
-        return true;
-    else
-        return false;
+int SizeOf(Queue *q) {
+    return q->size;
 }
