@@ -6,7 +6,7 @@ public class Solution {
     private int[] pre = new int[16]; // previous state of current state, self indexed
     private boolean[] visited = new boolean[16];
     private Queue<Integer> queue = new LinkedList<Integer>();
-    private String[] items =  {"白菜","羊", "狼", "农夫"};
+    private String[] items =  {"白菜", "羊", "狼", "农夫"};
 
     public void solve() {
         pre[0] = -1;
