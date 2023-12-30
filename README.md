@@ -24,12 +24,27 @@ However, due to the restrictions of the procedure-oriented nature of C, implemen
 3. Train coach rearrangement (queue)
 4. Knuth-Morris-Pratt algorithm for pattern searching
 
-## hw 3 Tree and binary tree
+### hw 3 Tree and binary tree
 
 1. Traverse thru binary tree
 2. Huffman coding
 3. Balanced binary search tree
 4. Max heap
+
+### hw 4 Graph
+
+1. Traverse thru graph
+2. Shortest paths
+3. Minimum spanning tree
+
+### hw 5 Sorting
+
+1. Shellsort
+2. 2-way mergesort
+3. Quicksort
+4. Radix sort
+
+*This part is especially extremely annoying. On the one hand, you have to record the state of each "round", however, those recursive algorithms don't work that way. On the other hand, you can't use any of the variants but only to reproduce a given implementation. Not to mention you spend more time reinventing the wheel than developing the algorithm.*
 
 ## (selected) proj
 
